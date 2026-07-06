@@ -22,7 +22,13 @@
 ```bash
 npm run dev                          # 로컬 개발
 npx vite build && npx gh-pages -d dist   # 빌드 + 배포 (--base 플래그 금지!)
+npm run import-seed                  # 시드(제품+옵션+사진) Supabase 투입
 ```
+
+## 목업 모드 (백엔드 없이 화면 확인)
+
+`.env.local`에 `VITE_MOCK=1` → 아무 아이디/비번으로 로그인, 샘플 5제품 표시.
+DEV 전용 가드 + dev서버 /@fs 이미지라 **프로덕션 빌드엔 절대 포함 안 됨** (빌드 후 grep으로 검증됨).
 
 ## 초기 데이터
 
