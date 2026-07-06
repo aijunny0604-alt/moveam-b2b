@@ -19,19 +19,23 @@
 
 ## 계정
 
-| 계정 | 아이디 | 역할 | 비고 |
+| 계정 | 로그인 | 역할 | 비고 |
 |------|------|------|------|
-| 관리자 | `admin` | admin | 초기 비번은 발급 시 채팅 참조, 변경 권장 |
-| 테스트 업체 | `test` | vendor | 시연/검증용 |
+| 관리자 | 아이디 `admin` + 비번 ("관리자 로그인" 토글) | admin | 비번 변경은 내 계정 탭 |
+| 테스트 업체 | 코드 `테스트` | vendor | 시연/검증용 |
 
-업체 계정 추가 발급: `node scripts/create-account.mjs <아이디> <비밀번호> <업체명>`
+업체 발급은 **관리자 화면 → 업체 관리 → [+ 계정 발급]** (업체명+코드). CLI 스크립트 불필요.
 
 ## 명령어
 
 ```bash
 npm run dev                          # 로컬 개발
 npx vite build && npx gh-pages -d dist   # 빌드 + 배포 (--base 플래그 금지!)
-npm run import-seed                  # 시드(제품+옵션+사진) Supabase 투입
+npm run import-seed                  # 번웨이 시드(제품+옵션+사진) 투입
+node scripts/import-brand.mjs seed/xxx.json [이미지폴더]  # 추가 브랜드 임포트
+node scripts/db-run.mjs supabase/migrations/00N_x.sql    # 마이그레이션 적용 (pg 직결)
+node scripts/attach-jsr-specs.mjs    # JSR 치수 도면 재첨부
+npx supabase functions deploy admin-accounts --project-ref xzphfatkwkhgerellybf --use-api  # Edge Function 배포 (SUPABASE_ACCESS_TOKEN 필요)
 ```
 
 ## 목업 모드 (백엔드 없이 화면 확인)
