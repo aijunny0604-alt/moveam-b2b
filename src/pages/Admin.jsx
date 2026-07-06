@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { won } from '../lib/format'
+import AdminPricing from './AdminPricing'
 
 // 관리자: 제품 CRUD + 사진 업로드. 업체 계정 발급은 Supabase 대시보드에서 (Phase 2에서 UI 예정)
 
@@ -516,6 +517,7 @@ function MyAccount() {
 const TABS = [
   { key: 'orders', label: '주문' },
   { key: 'products', label: '제품 관리' },
+  { key: 'pricing', label: '단가 조정' },
   { key: 'vendors', label: '업체 관리' },
   { key: 'account', label: '내 계정' },
 ]
@@ -534,6 +536,7 @@ export default function Admin() {
       </div>
       {tab === 'orders' && <OrderManager />}
       {tab === 'products' && <AdminProducts />}
+      {tab === 'pricing' && <AdminPricing />}
       {tab === 'vendors' && <VendorManager />}
       {tab === 'account' && <MyAccount />}
     </div>

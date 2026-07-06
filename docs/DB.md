@@ -93,6 +93,18 @@ Supabase `auth.users` 1:1. 상세 규칙은 [AUTH.md](AUTH.md).
 - RLS: 업체는 본인 주문 insert/select만, 상태 변경(update)은 admin만
 - **Realtime publication 등록됨** — 관리자(신규 주문)·업체(상태 변경) 실시간 알림용
 
+### price_adjustments — 단가 일괄 조정 이력 (마이그 005)
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | serial PK | |
+| description | text | 예: 'JSR "파이컷" 도매+소매 10% (100원 단위)' |
+| changes | jsonb | [{t:'p'\|'v', id, f:'w'\|'r', old, new, name}] — 되돌리기 스냅샷 |
+| affected | int | 변경 건수 |
+| reverted_at | timestamptz null | 되돌린 시각 |
+
+- admin 전용 RLS. 되돌리기는 changes의 old 값을 재적용 (이후 수동 수정도 덮어씀 — UI에서 경고)
+
 ## RLS 정책 (핵심)
 
 - `brands / products / product_variants / product_images`:
