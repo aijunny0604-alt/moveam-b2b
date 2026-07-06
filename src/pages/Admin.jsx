@@ -21,6 +21,7 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
     search_keywords: product.search_keywords ?? '',
     wholesale_price: product.wholesale_price ?? '',
     retail_price: product.retail_price ?? '',
+    public_note: product.public_note ?? '',
     note: product.note ?? '',
     brand_id: product.brand_id,
     is_active: product.is_active,
@@ -45,6 +46,7 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
       search_keywords: form.search_keywords || null,
       wholesale_price: toInt(form.wholesale_price),
       retail_price: toInt(form.retail_price),
+      public_note: form.public_note || null,
       note: form.note || null,
       brand_id: form.brand_id,
       is_active: form.is_active,
@@ -103,6 +105,7 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
         <select className="border rounded-lg px-3 py-2" value={form.brand_id} onChange={(e) => setForm({ ...form, brand_id: parseInt(e.target.value, 10) })}>
           {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
+        <textarea className="border rounded-lg px-3 py-2 border-amber-300 bg-amber-50" rows={2} value={form.public_note} onChange={set('public_note')} placeholder="⚠️ 주의사항/특이사항 (업체에게 보임)" />
         <textarea className="border rounded-lg px-3 py-2" rows={2} value={form.note} onChange={set('note')} placeholder="내부 메모 (업체에겐 안 보임)" />
         <label className="flex items-center gap-2 text-sm min-h-[44px]">
           <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
@@ -155,7 +158,7 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
   )
 }
 
-export default function Admin() {
+function AdminProducts() {
   const [brands, setBrands] = useState([])
   const [products, setProducts] = useState(null)
   const [q, setQ] = useState('')
@@ -256,9 +259,175 @@ export default function Admin() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl p-4 shadow-sm text-sm text-neutral-500">
-        업체 계정 발급/차단은 아직 Supabase 대시보드에서 합니다 (Authentication → Add user, profiles에 업체명 등록). 관리 UI는 Phase 2 예정.
+    </div>
+  )
+}
+
+// ── 업체(고객) 관리 ─────────────────────────────
+
+function VendorManager() {
+  const [vendors, setVendors] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const [form, setForm] = useState({ loginId: '', password: '', companyName: '', memo: '' })
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  const load = async () => {
+    const { data } = await supabase.from('profiles').select('*').order('company_name')
+    setVendors(data ?? [])
+  }
+  useEffect(() => { load() }, [])
+
+  const callFn = async (body) => {
+    setBusy(true); setMsg('')
+    const { data, error } = await supabase.functions.invoke('admin-accounts', { body })
+    setBusy(false)
+    if (error || data?.error) { setMsg('실패: ' + (data?.error ?? error.message)); return false }
+    return true
+  }
+
+  const create = async () => {
+    if (!(await callFn({ action: 'create', ...form }))) return
+    setMsg(`발급 완료: ${form.loginId} / ${form.password}`)
+    setForm({ loginId: '', password: '', companyName: '', memo: '' })
+    setAdding(false)
+    load()
+  }
+
+  const resetPassword = async (v) => {
+    const pw = prompt(`[${v.company_name}] 새 비밀번호 입력 (8자 이상):`)
+    if (!pw) return
+    if (await callFn({ action: 'reset-password', userId: v.id, password: pw })) {
+      setMsg(`${v.company_name} 비밀번호 변경 완료: ${pw}`)
+    }
+  }
+
+  const toggleActive = async (v) => {
+    await supabase.from('profiles').update({ is_active: !v.is_active }).eq('id', v.id)
+    load()
+  }
+
+  const saveInfo = async (v) => {
+    const name = prompt('업체명 수정:', v.company_name)
+    if (name === null) return
+    const memo = prompt('메모 수정 (연락처, 담당자 등):', v.memo ?? '')
+    if (memo === null) return
+    await supabase.from('profiles').update({ company_name: name, memo: memo || null }).eq('id', v.id)
+    load()
+  }
+
+  if (!vendors) return <p className="text-neutral-400 py-10 text-center">불러오는 중…</p>
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-lg">업체 관리 ({vendors.length})</h2>
+        <button onClick={() => setAdding(!adding)} className="px-3 py-2 rounded-lg bg-brand text-white text-sm font-bold min-h-[44px]">
+          + 계정 발급
+        </button>
       </div>
+
+      {adding && (
+        <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <input className="border rounded-lg px-3 py-2" value={form.loginId} onChange={(e) => setForm({ ...form, loginId: e.target.value.trim() })} placeholder="아이디 (영문/숫자)" autoCapitalize="none" />
+            <input className="border rounded-lg px-3 py-2" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="비밀번호 (8자 이상)" />
+          </div>
+          <input className="w-full border rounded-lg px-3 py-2" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} placeholder="업체명" />
+          <input className="w-full border rounded-lg px-3 py-2" value={form.memo} onChange={(e) => setForm({ ...form, memo: e.target.value })} placeholder="메모 (연락처, 담당자 등 — 선택)" />
+          <button onClick={create} disabled={busy || !form.loginId || form.password.length < 8 || !form.companyName}
+            className="w-full bg-neutral-900 text-white rounded-xl py-2.5 font-bold min-h-[44px] disabled:opacity-40">
+            {busy ? '처리 중…' : '발급'}
+          </button>
+        </div>
+      )}
+
+      {msg && <p className="text-sm bg-white rounded-xl p-3 shadow-sm text-neutral-700">{msg}</p>}
+
+      <div className="space-y-2">
+        {vendors.map((v) => (
+          <div key={v.id} className={`bg-white rounded-xl p-3 shadow-sm ${!v.is_active ? 'opacity-50' : ''}`}>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="min-w-0">
+                <p className="font-semibold text-sm">
+                  {v.company_name}
+                  {v.role === 'admin' && <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-neutral-900 text-white">관리자</span>}
+                  {!v.is_active && <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-red-100 text-red-600">차단됨</span>}
+                </p>
+                <p className="text-xs text-neutral-500">아이디: {v.login_id ?? '-'}{v.memo ? ` · ${v.memo}` : ''}</p>
+              </div>
+              <div className="flex gap-1.5">
+                <button onClick={() => saveInfo(v)} className="px-2.5 py-2 rounded-lg border border-neutral-300 text-xs min-h-[40px]">정보수정</button>
+                <button onClick={() => resetPassword(v)} disabled={busy} className="px-2.5 py-2 rounded-lg border border-neutral-300 text-xs min-h-[40px]">비번재발급</button>
+                {v.role !== 'admin' && (
+                  <button onClick={() => toggleActive(v)} className={`px-2.5 py-2 rounded-lg text-xs min-h-[40px] ${v.is_active ? 'border border-red-300 text-red-600' : 'bg-neutral-900 text-white'}`}>
+                    {v.is_active ? '차단' : '해제'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── 내 계정 (비밀번호 변경) ──────────────────────
+
+function MyAccount() {
+  const [pw, setPw] = useState('')
+  const [pw2, setPw2] = useState('')
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const change = async () => {
+    if (pw !== pw2) { setMsg('비밀번호가 서로 다릅니다.'); return }
+    setBusy(true); setMsg('')
+    const { error } = await supabase.auth.updateUser({ password: pw })
+    setBusy(false)
+    if (error) { setMsg('실패: ' + error.message); return }
+    setMsg('비밀번호 변경 완료!')
+    setPw(''); setPw2('')
+  }
+
+  return (
+    <div className="max-w-sm space-y-3">
+      <h2 className="font-bold text-lg">내 비밀번호 변경</h2>
+      <input type="password" className="w-full border rounded-xl px-4 py-3 min-h-[44px]" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="새 비밀번호 (8자 이상)" />
+      <input type="password" className="w-full border rounded-xl px-4 py-3 min-h-[44px]" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="새 비밀번호 확인" />
+      {msg && <p className="text-sm text-neutral-700">{msg}</p>}
+      <button onClick={change} disabled={busy || pw.length < 8}
+        className="w-full bg-brand text-white rounded-xl py-3 font-bold min-h-[48px] disabled:opacity-40">
+        {busy ? '변경 중…' : '비밀번호 변경'}
+      </button>
+    </div>
+  )
+}
+
+// ── 탭 셸 ───────────────────────────────────────
+
+const TABS = [
+  { key: 'products', label: '제품 관리' },
+  { key: 'vendors', label: '업체 관리' },
+  { key: 'account', label: '내 계정' },
+]
+
+export default function Admin() {
+  const [tab, setTab] = useState('products')
+  return (
+    <div>
+      <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm w-fit">
+        {TABS.map((t) => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`px-4 py-2.5 rounded-lg text-sm font-semibold min-h-[44px] ${tab === t.key ? 'bg-neutral-900 text-white' : 'text-neutral-600'}`}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {tab === 'products' && <AdminProducts />}
+      {tab === 'vendors' && <VendorManager />}
+      {tab === 'account' && <MyAccount />}
     </div>
   )
 }

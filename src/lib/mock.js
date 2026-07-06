@@ -22,7 +22,8 @@ const brands = [
 const products = [
   {
     id: 1, brand_id: 1, name: '제네시스 쿠페 드리프트 타각킷', description: null,
-    wholesale_price: 209000, retail_price: 270000, search_keywords: '젠쿱 타각', is_active: true, note: null, sort_order: 1,
+    wholesale_price: 209000, retail_price: 270000, search_keywords: '젠쿱 타각', is_active: true, note: null,
+    public_note: '장착 시 얼라인먼트 재조정 필수. BK1/BK2 공용.', sort_order: 1,
     product_variants: [], product_images: [{ id: 1, product_id: 1, storage_path: 'mock/1.jpg', sort_order: 1 }],
     brands: { name: 'BurnWay', slug: 'burnway' },
   },

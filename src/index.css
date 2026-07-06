@@ -6,6 +6,14 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* 큰 모니터에선 전체 스케일 업 (rem 기반이라 일괄 확대) */
+@media (min-width: 1280px) {
+  html { font-size: 17px; }
+}
+@media (min-width: 1920px) {
+  html { font-size: 19px; }
+}
+
 body {
   @apply bg-neutral-100 text-neutral-900;
 }

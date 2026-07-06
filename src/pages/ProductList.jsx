@@ -67,14 +67,14 @@ export default function ProductList() {
         <span className="text-sm text-neutral-500">{filtered.length}개</span>
       </div>
       <SearchBar value={q} onChange={setQ} />
-      <div className="space-y-3 mt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-2">
         {filtered.map((p) => (
           <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} />
         ))}
-        {filtered.length === 0 && (
-          <p className="text-neutral-400 text-center py-10">검색 결과가 없습니다.</p>
-        )}
       </div>
+      {filtered.length === 0 && (
+        <p className="text-neutral-400 text-center py-10">검색 결과가 없습니다.</p>
+      )}
     </div>
   )
 }

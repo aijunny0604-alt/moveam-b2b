@@ -38,50 +38,63 @@ export default function ProductDetail() {
   if (!product) return <p className="text-neutral-400 py-10 text-center">불러오는 중…</p>
 
   return (
-    <div className="space-y-4">
-      <button onClick={() => navigate(-1)} className="text-sm text-neutral-500 min-h-[44px] -mb-2">
+    <div>
+      <button onClick={() => navigate(-1)} className="text-sm text-neutral-500 min-h-[44px]">
         ← 목록으로
       </button>
 
-      {/* 사진 */}
-      <div className="rounded-2xl overflow-hidden bg-neutral-200 aspect-square flex items-center justify-center">
-        {images.length > 0 ? (
-          <img src={images[current]} alt={product.name} className="w-full h-full object-contain bg-white" />
-        ) : (
-          <span className="text-neutral-400">등록된 사진이 없습니다</span>
-        )}
-      </div>
-      {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {images.map((url, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              className={`w-16 h-16 shrink-0 rounded-lg overflow-hidden border-2 ${i === current ? 'border-brand' : 'border-transparent'}`}
-            >
-              <img src={url} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+        {/* 사진 */}
+        <div className="space-y-3">
+          <div className="rounded-2xl overflow-hidden bg-neutral-200 aspect-square flex items-center justify-center">
+            {images.length > 0 ? (
+              <img src={images[current]} alt={product.name} className="w-full h-full object-contain bg-white" />
+            ) : (
+              <span className="text-neutral-400">등록된 사진이 없습니다</span>
+            )}
+          </div>
+          {images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {images.map((url, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  className={`w-16 h-16 shrink-0 rounded-lg overflow-hidden border-2 ${i === current ? 'border-brand' : 'border-transparent'}`}
+                >
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      )}
 
-      {/* 정보 */}
-      <div>
-        <p className="text-xs text-neutral-400 mb-1">{product.brands?.name}</p>
-        <h1 className="font-bold text-xl leading-snug">{product.name}</h1>
-        {product.description && (
-          <p className="text-sm text-neutral-600 mt-2 whitespace-pre-line">{product.description}</p>
-        )}
-      </div>
+        {/* 정보 */}
+        <div className="space-y-4 mt-4 lg:mt-0">
+          <div>
+            <p className="text-xs text-neutral-400 mb-1">{product.brands?.name}</p>
+            <h1 className="font-bold text-xl lg:text-2xl leading-snug">{product.name}</h1>
+            {product.description && (
+              <p className="text-sm text-neutral-600 mt-2 whitespace-pre-line">{product.description}</p>
+            )}
+          </div>
 
-      <PriceTable product={product} />
+          <PriceTable product={product} />
 
-      {profile?.role === 'admin' && product.note && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm">
-          <p className="font-semibold text-yellow-800 mb-0.5">내부 메모 (관리자만 표시)</p>
-          <p className="text-yellow-900">{product.note}</p>
+          {product.public_note && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-sm">
+              <p className="font-bold text-amber-800 mb-1">⚠️ 주의사항 / 특이사항</p>
+              <p className="text-amber-900 whitespace-pre-line">{product.public_note}</p>
+            </div>
+          )}
+
+          {profile?.role === 'admin' && product.note && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm">
+              <p className="font-semibold text-yellow-800 mb-0.5">내부 메모 (관리자만 표시)</p>
+              <p className="text-yellow-900 whitespace-pre-line">{product.note}</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <InquiryButtons productName={product.name} />
     </div>

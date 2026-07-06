@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { HashRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import { supabase, isConfigured } from './lib/supabase'
+import logo from './assets/move-logo.png'
 import Login from './pages/Login'
 import BrandHome from './pages/BrandHome'
 import ProductList from './pages/ProductList'
@@ -14,9 +15,9 @@ function Header() {
   const { profile, signOut } = useAuth()
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-neutral-200">
-      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="font-bold text-lg">
-          MOVEAM <span className="text-brand">B2B</span>
+      <div className="max-w-3xl lg:max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="Move Motors Automotive" className="h-8 lg:h-9 w-auto" />
         </Link>
         <div className="flex items-center gap-3 text-sm">
           {profile?.role === 'admin' && (
@@ -88,7 +89,7 @@ export default function App() {
         ) : (
           <>
             <Header />
-            <main className="max-w-3xl mx-auto px-4 py-4 pb-24">
+            <main className="max-w-3xl lg:max-w-6xl mx-auto px-4 py-4 pb-24">
               <Routes>
                 <Route path="/" element={<BrandHome />} />
                 <Route path="/brand/:slug" element={<ProductList />} />

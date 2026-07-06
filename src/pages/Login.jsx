@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import logo from '../assets/move-logo.png'
 
 // 사장님들 계정은 '업체명@moveam.local' 형태로 발급 — 화면엔 '아이디'로만 노출
 export default function Login() {
@@ -22,10 +23,8 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center p-6 bg-neutral-100">
       <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-2xl shadow-sm p-6 space-y-4">
         <div className="text-center mb-2">
-          <h1 className="text-2xl font-bold">
-            MOVEAM <span className="text-brand">B2B</span>
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">거래처 전용 제품 단가표</p>
+          <img src={logo} alt="Move Motors Automotive" className="h-12 mx-auto" />
+          <p className="text-sm text-neutral-500 mt-3">거래처 전용 제품 단가표</p>
         </div>
         <input
           value={id}

@@ -29,6 +29,7 @@ if (error) { console.error('유저 생성 실패:', error.message); process.exit
 const { error: pErr } = await sb.from('profiles').insert({
   id: data.user.id,
   company_name: companyName,
+  login_id: id,
   role,
 })
 if (pErr) { console.error('프로필 등록 실패:', pErr.message); process.exit(1) }

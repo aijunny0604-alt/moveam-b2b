@@ -34,11 +34,18 @@ export default function ProductCard({ product, imageUrl }) {
             </span>
           </p>
         </div>
-        {hasOptions && (
-          <span className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
-            옵션별 단가
-          </span>
-        )}
+        <div className="flex gap-1 mt-1">
+          {hasOptions && (
+            <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
+              옵션별 단가
+            </span>
+          )}
+          {product.public_note && (
+            <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+              ⚠️ 주의사항
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   )
