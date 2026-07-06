@@ -12,10 +12,19 @@
 
 | 항목 | 값 |
 |------|-----|
-| 로컬 개발 | `npm run dev` → http://localhost:5173 |
-| 배포 URL | https://aijunny0604-alt.github.io/moveam-b2b/ (예정) |
-| GitHub 저장소 | (생성 후 기입) |
-| Supabase 프로젝트 | (생성 후 ref 기입) — ⚠️ 기존 POS Supabase와 별개 프로젝트 권장 |
+| 로컬 개발 | `npm run dev` → http://localhost:5173/moveam-b2b/ |
+| 배포 URL | https://aijunny0604-alt.github.io/moveam-b2b/ ✅ 라이브 |
+| GitHub 저장소 | https://github.com/aijunny0604-alt/moveam-b2b (공개, seed 제외) |
+| Supabase 프로젝트 | `xzphfatkwkhgerellybf` (서울, Free) — POS(`jubzppndcclhnvgbvrxr`)와 별개 |
+
+## 계정
+
+| 계정 | 아이디 | 역할 | 비고 |
+|------|------|------|------|
+| 관리자 | `admin` | admin | 초기 비번은 발급 시 채팅 참조, 변경 권장 |
+| 테스트 업체 | `test` | vendor | 시연/검증용 |
+
+업체 계정 추가 발급: `node scripts/create-account.mjs <아이디> <비밀번호> <업체명>`
 
 ## 명령어
 

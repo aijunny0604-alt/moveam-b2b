@@ -6,7 +6,9 @@
 
 ## Current State
 
-Phase 0 완료 (2026-07-02). 다음: Phase 1.
+**Phase 1 완료 — 라이브 배포됨 (2026-07-06)**: https://aijunny0604-alt.github.io/moveam-b2b/
+95개 제품 + 사진 107장 임포트, admin/test 계정 발급, 모바일 라이브 검증 통과.
+남은 것: 카톡 채널 URL·전화번호 기입(`src/lib/config.js`), 업체 계정 실제 발급.
 
 ## Phase 0 — 기획/문서 ✅
 
