@@ -25,6 +25,7 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
     note: product.note ?? '',
     brand_id: product.brand_id,
     is_active: product.is_active,
+    in_stock: product.in_stock,
   })
   const [variants, setVariants] = useState(
     [...(product.product_variants ?? [])].sort((a, z) => a.sort_order - z.sort_order)
@@ -50,6 +51,7 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
       note: form.note || null,
       brand_id: form.brand_id,
       is_active: form.is_active,
+      in_stock: form.in_stock,
     }).eq('id', product.id)
 
     if (!error && variants.length) {
@@ -107,10 +109,16 @@ function ProductEditor({ product, brands, onSaved, onClose }) {
         </select>
         <textarea className="border rounded-lg px-3 py-2 border-amber-300 bg-amber-50" rows={2} value={form.public_note} onChange={set('public_note')} placeholder="⚠️ 주의사항/특이사항 (업체에게 보임)" />
         <textarea className="border rounded-lg px-3 py-2" rows={2} value={form.note} onChange={set('note')} placeholder="내부 메모 (업체에겐 안 보임)" />
-        <label className="flex items-center gap-2 text-sm min-h-[44px]">
-          <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
-          판매 중 (끄면 업체 화면에서 숨김)
-        </label>
+        <div className="flex gap-4 flex-wrap">
+          <label className="flex items-center gap-2 text-sm min-h-[44px]">
+            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+            판매 중 (끄면 업체 화면에서 숨김)
+          </label>
+          <label className="flex items-center gap-2 text-sm min-h-[44px]">
+            <input type="checkbox" checked={form.in_stock} onChange={(e) => setForm({ ...form, in_stock: e.target.checked })} />
+            재고 있음 (끄면 <span className="text-red-600 font-semibold">품절</span> 표시)
+          </label>
+        </div>
       </div>
 
       {variants.length > 0 && (
@@ -240,6 +248,7 @@ function AdminProducts() {
                 <div className="min-w-0">
                   <p className="font-semibold text-sm leading-snug line-clamp-1">
                     {!p.is_active && <span className="text-red-500 mr-1">[숨김]</span>}
+                    {!p.in_stock && <span className="text-orange-500 mr-1">[품절]</span>}
                     {p.name}
                   </p>
                   <p className="text-xs text-neutral-500">

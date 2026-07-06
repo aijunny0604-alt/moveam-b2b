@@ -22,14 +22,14 @@ const brands = [
 const products = [
   {
     id: 1, brand_id: 1, name: '제네시스 쿠페 드리프트 타각킷', description: null,
-    wholesale_price: 209000, retail_price: 270000, search_keywords: '젠쿱 타각', is_active: true, note: null,
+    wholesale_price: 209000, retail_price: 270000, search_keywords: '젠쿱 타각', is_active: true, in_stock: false, note: null,
     public_note: '장착 시 얼라인먼트 재조정 필수. BK1/BK2 공용.', sort_order: 1,
     product_variants: [], product_images: [{ id: 1, product_id: 1, storage_path: 'mock/1.jpg', sort_order: 1 }],
     brands: { name: 'BurnWay', slug: 'burnway' },
   },
   {
     id: 2, brand_id: 1, name: '현대/기아 허브스페이스 PCD 114.3', description: null,
-    wholesale_price: null, retail_price: null, search_keywords: '허브 스페이서', is_active: true, note: null, sort_order: 2,
+    wholesale_price: null, retail_price: null, search_keywords: '허브 스페이서', is_active: true, in_stock: true, note: null, sort_order: 2,
     product_variants: [
       { id: 1, product_id: 2, label: '15mm', wholesale_price: 77000, retail_price: 108000, sort_order: 1 },
       { id: 2, product_id: 2, label: '18mm', wholesale_price: 93000, retail_price: 126000, sort_order: 2 },
@@ -54,7 +54,7 @@ const products = [
   },
   {
     id: 4, brand_id: 2, name: 'HKS BOV 밸브 SQV 블랙 에디션', description: null,
-    wholesale_price: null, retail_price: null, search_keywords: 'BOV 블로우오프', is_active: true, note: null, sort_order: 4,
+    wholesale_price: null, retail_price: null, search_keywords: 'BOV 블로우오프', is_active: true, in_stock: true, note: null, sort_order: 4,
     product_variants: [
       { id: 9, product_id: 4, label: '블랙', wholesale_price: 265000, retail_price: 370000, sort_order: 1 },
       { id: 10, product_id: 4, label: '실버', wholesale_price: 265000, retail_price: 350000, sort_order: 2 },
@@ -64,7 +64,7 @@ const products = [
   },
   {
     id: 5, brand_id: 1, name: '제네시스 쿠페 드리프트 라스트 킷 아주 긴 제품명 줄바꿈 테스트용', description: '옵션 추가 시 할인',
-    wholesale_price: 1700000, retail_price: 1900000, search_keywords: '젠쿱 라스트킷', is_active: true, note: null, sort_order: 5,
+    wholesale_price: 1700000, retail_price: 1900000, search_keywords: '젠쿱 라스트킷', is_active: true, in_stock: true, note: null, sort_order: 5,
     product_variants: [],
     product_images: [
       { id: 5, product_id: 5, storage_path: 'mock/5.jpg', sort_order: 1 },

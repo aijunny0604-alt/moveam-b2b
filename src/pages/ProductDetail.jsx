@@ -78,6 +78,13 @@ export default function ProductDetail() {
             )}
           </div>
 
+          {!product.in_stock && (
+            <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm">
+              <p className="font-bold text-red-700">현재 재고가 없습니다</p>
+              <p className="text-red-600 mt-0.5">입고 일정은 카톡/전화로 문의해주세요.</p>
+            </div>
+          )}
+
           <PriceTable product={product} />
 
           {product.public_note && (
