@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+.env.local
+.env.*.local
+
+# 도매가 포함 — 공개 저장소에 올리지 않는다 (원본: 엑셀 + 로컬 보관)
+seed/
