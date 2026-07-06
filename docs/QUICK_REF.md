@@ -1,60 +1,63 @@
-﻿# QUICK_REF
+# QUICK_REF
 
 ## Purpose
 
-媛쒕컻/?댁쁺 以??먯＜ 李얜뒗 媛믨낵 紐낅졊?????섏씠吏 紐⑥쓬. 媛믪씠 諛붾뚮㈃ ??臾몄꽌瑜?利됱떆 媛깆떊?쒕떎.
+개발/운영 중 자주 찾는 값과 명령어 한 페이지 모음. 값이 바뀌면 이 문서를 즉시 갱신한다.
 
 ## Current State
 
-?꾨줈?앺듃 誘몄깮?????꾨옒 媛믩뱾? ?명똿?섎㈃??梨꾩슫??
+프로젝트 미생성 — 아래 값들은 세팅하면서 채운다.
 
-## 二쇱냼
+## 주소
 
-| ??ぉ | 媛?|
+| 항목 | 값 |
 |------|-----|
-| 濡쒖뺄 媛쒕컻 | `npm run dev` ??http://localhost:5173/moveam-b2b/ |
-| 諛고룷 URL | https://aijunny0604-alt.github.io/moveam-b2b/ ???쇱씠釉?|
-| GitHub ??μ냼 | https://github.com/aijunny0604-alt/moveam-b2b (怨듦컻, seed ?쒖쇅) |
-| Supabase ?꾨줈?앺듃 | `xzphfatkwkhgerellybf` (?쒖슱, Free) ??POS(`jubzppndcclhnvgbvrxr`)? 蹂꾧컻 |
+| 로컬 개발 | `npm run dev` → http://localhost:5173/moveam-b2b/ |
+| 배포 URL | https://aijunny0604-alt.github.io/moveam-b2b/ ✅ 라이브 |
+| GitHub 저장소 | https://github.com/aijunny0604-alt/moveam-b2b (공개, seed 제외) |
+| Supabase 프로젝트 | `xzphfatkwkhgerellybf` (서울, Free) — POS(`jubzppndcclhnvgbvrxr`)와 별개 |
 
-## 怨꾩젙
+## 계정
 
-| 怨꾩젙 | 濡쒓렇??| ??븷 | 鍮꾧퀬 |
+| 계정 | 로그인 | 역할 | 비고 |
 |------|------|------|------|
-| 愿由ъ옄 | ?꾩씠??`admin` + 鍮꾨쾲 ("愿由ъ옄 濡쒓렇?? ?좉?) | admin | 鍮꾨쾲 蹂寃쎌? ??怨꾩젙 ??|
-| ?뚯뒪???낆껜 | 肄붾뱶 `?뚯뒪?? | vendor | ?쒖뿰/寃利앹슜 |
+| 관리자 | 아이디 `admin` + 비번 ("관리자 로그인" 토글) | admin | 비번 변경은 내 계정 탭 |
+| 테스트 업체 | 코드 `0000` | vendor | 시연/검증용 |
 
-?낆껜 諛쒓툒? **愿由ъ옄 ?붾㈃ ???낆껜 愿由???[+ 怨꾩젙 諛쒓툒]** (?낆껜紐?肄붾뱶). CLI ?ㅽ겕由쏀듃 遺덊븘??
+업체 발급은 **관리자 화면 → 업체 관리 → [+ 계정 발급]** (업체명+코드). CLI 스크립트 불필요.
 
-## 紐낅졊??
+## 명령어
+
 ```bash
-npm run dev                          # 濡쒖뺄 媛쒕컻
-npx vite build && npx gh-pages -d dist   # 鍮뚮뱶 + 諛고룷 (--base ?뚮옒洹?湲덉?!)
-npm run import-seed                  # 踰덉썾???쒕뱶(?쒗뭹+?듭뀡+?ъ쭊) ?ъ엯
-node scripts/import-brand.mjs seed/xxx.json [?대?吏?대뜑]  # 異붽? 釉뚮옖???꾪룷??node scripts/db-run.mjs supabase/migrations/00N_x.sql    # 留덉씠洹몃젅?댁뀡 ?곸슜 (pg 吏곴껐)
-node scripts/attach-jsr-specs.mjs    # JSR 移섏닔 ?꾨㈃ ?ъ꺼遺
-npx supabase functions deploy admin-accounts --project-ref xzphfatkwkhgerellybf --use-api  # Edge Function 諛고룷 (SUPABASE_ACCESS_TOKEN ?꾩슂)
+npm run dev                          # 로컬 개발
+npx vite build && npx gh-pages -d dist   # 빌드 + 배포 (--base 플래그 금지!)
+npm run import-seed                  # 번웨이 시드(제품+옵션+사진) 투입
+node scripts/import-brand.mjs seed/xxx.json [이미지폴더]  # 추가 브랜드 임포트
+node scripts/db-run.mjs supabase/migrations/00N_x.sql    # 마이그레이션 적용 (pg 직결)
+node scripts/attach-jsr-specs.mjs    # JSR 치수 도면 재첨부
+npx supabase functions deploy admin-accounts --project-ref xzphfatkwkhgerellybf --use-api  # Edge Function 배포 (SUPABASE_ACCESS_TOKEN 필요)
 ```
 
-## 紐⑹뾽 紐⑤뱶 (諛깆뿏???놁씠 ?붾㈃ ?뺤씤)
+## 목업 모드 (백엔드 없이 화면 확인)
 
-`.env.local`??`VITE_MOCK=1` ???꾨Т ?꾩씠??鍮꾨쾲?쇰줈 濡쒓렇?? ?섑뵆 5?쒗뭹 ?쒖떆.
-DEV ?꾩슜 媛??+ dev?쒕쾭 /@fs ?대?吏??**?꾨줈?뺤뀡 鍮뚮뱶???덈? ?ы븿 ????* (鍮뚮뱶 ??grep?쇰줈 寃利앸맖).
+`.env.local`에 `VITE_MOCK=1` → 아무 아이디/비번으로 로그인, 샘플 5제품 표시.
+DEV 전용 가드 + dev서버 /@fs 이미지라 **프로덕션 빌드엔 절대 포함 안 됨** (빌드 후 grep으로 검증됨).
 
-## 珥덇린 ?곗씠??
-- ?먮낯 ?묒?: `D:\?낅Т\?④???踰덉썾??260702 踰덉썾???좉퇋 ?④???xlsx`
-- ?꾪룷???ㅽ겕由쏀듃: `scripts/import-xlsx.mjs` (?덉젙)
+## 초기 데이터
 
-## 臾몄쓽 ?곌껐 (1:1 ?먯븻??
+- 원본 엑셀: `D:\업무\단가표\번웨이\260702 번웨이 신규 단가표.xlsx`
+- 임포트 스크립트: `scripts/import-xlsx.mjs` (예정)
 
-| 梨꾨꼸 | 媛?|
+## 문의 연결 (1:1 원앤원)
+
+| 채널 | 값 |
 |------|-----|
-| 移댁뭅?ㅽ넚 梨꾨꼸 | (梨꾨꼸 URL 湲곗엯 ?꾩슂) |
-| ?꾪솕 | (??쒕쾲??湲곗엯 ?꾩슂) |
+| 카카오톡 채널 | (채널 URL 기입 필요) |
+| 전화 | (대표번호 기입 필요) |
 
 ## Current Rules
 
-- 鍮꾨???.env)???덈? 而ㅻ컠?섏? ?딅뒗?? anon key留??꾨줎???ъ슜.
+- 비밀키(.env)는 절대 커밋하지 않는다. anon key만 프론트 사용.
 
 ## Related Docs
 
