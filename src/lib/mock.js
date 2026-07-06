@@ -114,4 +114,12 @@ export const mockClient = {
       remove: async () => ({ error: null }),
     }),
   },
+  functions: {
+    invoke: async () => ({ data: { error: '목업 모드에선 불가' }, error: null }),
+  },
+  channel: () => {
+    const ch = { on: () => ch, subscribe: () => ch }
+    return ch
+  },
+  removeChannel: () => {},
 }

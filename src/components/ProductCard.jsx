@@ -1,16 +1,22 @@
 import { Link } from 'react-router-dom'
 import { won, priceSummary } from '../lib/format'
 
-export default function ProductCard({ product, imageUrl }) {
+export default function ProductCard({ product, imageUrl, style }) {
   const { wholesale, retail, hasOptions } = priceSummary(product)
   return (
     <Link
       to={`/product/${product.id}`}
-      className="flex gap-3 bg-white rounded-2xl p-3 shadow-sm active:scale-[0.99] transition"
+      style={style}
+      className="group fade-up flex gap-3 bg-white rounded-2xl p-3 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99]"
     >
       <div className="relative w-24 h-24 shrink-0 rounded-xl bg-neutral-200 overflow-hidden flex items-center justify-center">
         {imageUrl ? (
-          <img src={imageUrl} alt={product.name} className={`w-full h-full object-cover ${!product.in_stock ? 'opacity-40 grayscale' : ''}`} loading="lazy" />
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${!product.in_stock ? 'opacity-40 grayscale' : ''}`}
+            loading="lazy"
+          />
         ) : (
           <span className="text-neutral-400 text-xs">사진 없음</span>
         )}
@@ -45,7 +51,7 @@ export default function ProductCard({ product, imageUrl }) {
           )}
           {hasOptions && (
             <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">
-              옵션별 단가
+              옵션 {product.product_variants.length}개
             </span>
           )}
           {product.public_note && (

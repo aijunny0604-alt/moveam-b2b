@@ -277,7 +277,7 @@ function AdminProducts() {
 function VendorManager() {
   const [vendors, setVendors] = useState(null)
   const [adding, setAdding] = useState(false)
-  const [form, setForm] = useState({ loginId: '', password: '', companyName: '', memo: '' })
+  const [form, setForm] = useState({ code: '', companyName: '', memo: '' })
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
@@ -296,11 +296,20 @@ function VendorManager() {
   }
 
   const create = async () => {
-    if (!(await callFn({ action: 'create', ...form }))) return
-    setMsg(`발급 완료: ${form.loginId} / ${form.password}`)
-    setForm({ loginId: '', password: '', companyName: '', memo: '' })
+    if (!(await callFn({ action: 'create-code', ...form }))) return
+    setMsg(`발급 완료 — 업체에 전달할 코드: 「${form.code.trim()}」`)
+    setForm({ code: '', companyName: '', memo: '' })
     setAdding(false)
     load()
+  }
+
+  const changeCode = async (v) => {
+    const newCode = prompt(`[${v.company_name}] 새 코드 입력 (한글/영문/숫자 자유):`, v.login_id ?? '')
+    if (!newCode?.trim()) return
+    if (await callFn({ action: 'change-code', userId: v.id, newCode })) {
+      setMsg(`${v.company_name} 코드 변경 완료: 「${newCode.trim()}」`)
+      load()
+    }
   }
 
   const resetPassword = async (v) => {
@@ -337,16 +346,14 @@ function VendorManager() {
       </div>
 
       {adding && (
-        <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <input className="border rounded-lg px-3 py-2" value={form.loginId} onChange={(e) => setForm({ ...form, loginId: e.target.value.trim() })} placeholder="아이디 (영문/숫자)" autoCapitalize="none" />
-            <input className="border rounded-lg px-3 py-2" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="비밀번호 (8자 이상)" />
-          </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm space-y-2 fade-up">
           <input className="w-full border rounded-lg px-3 py-2" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} placeholder="업체명" />
+          <input className="w-full border rounded-lg px-3 py-2" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="고유 코드 (한글/영문/숫자 자유 — 예: 태욱모터스77)" autoCapitalize="none" />
           <input className="w-full border rounded-lg px-3 py-2" value={form.memo} onChange={(e) => setForm({ ...form, memo: e.target.value })} placeholder="메모 (연락처, 담당자 등 — 선택)" />
-          <button onClick={create} disabled={busy || !form.loginId || form.password.length < 8 || !form.companyName}
+          <p className="text-xs text-neutral-400">업체는 이 코드 하나만 입력하면 입장합니다. 대소문자는 구분하지 않습니다.</p>
+          <button onClick={create} disabled={busy || !form.code.trim() || !form.companyName}
             className="w-full bg-neutral-900 text-white rounded-xl py-2.5 font-bold min-h-[44px] disabled:opacity-40">
-            {busy ? '처리 중…' : '발급'}
+            {busy ? '처리 중…' : '코드 발급'}
           </button>
         </div>
       )}
@@ -363,11 +370,15 @@ function VendorManager() {
                   {v.role === 'admin' && <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-neutral-900 text-white">관리자</span>}
                   {!v.is_active && <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-red-100 text-red-600">차단됨</span>}
                 </p>
-                <p className="text-xs text-neutral-500">아이디: {v.login_id ?? '-'}{v.memo ? ` · ${v.memo}` : ''}</p>
+                <p className="text-xs text-neutral-500">{v.role === 'admin' ? '아이디' : '코드'}: {v.login_id ?? '-'}{v.memo ? ` · ${v.memo}` : ''}</p>
               </div>
               <div className="flex gap-1.5">
                 <button onClick={() => saveInfo(v)} className="px-2.5 py-2 rounded-lg border border-neutral-300 text-xs min-h-[40px]">정보수정</button>
-                <button onClick={() => resetPassword(v)} disabled={busy} className="px-2.5 py-2 rounded-lg border border-neutral-300 text-xs min-h-[40px]">비번재발급</button>
+                {v.role === 'admin' ? (
+                  <button onClick={() => resetPassword(v)} disabled={busy} className="px-2.5 py-2 rounded-lg border border-neutral-300 text-xs min-h-[40px]">비번재발급</button>
+                ) : (
+                  <button onClick={() => changeCode(v)} disabled={busy} className="px-2.5 py-2 rounded-lg border border-neutral-300 text-xs min-h-[40px]">코드변경</button>
+                )}
                 {v.role !== 'admin' && (
                   <button onClick={() => toggleActive(v)} className={`px-2.5 py-2 rounded-lg text-xs min-h-[40px] ${v.is_active ? 'border border-red-300 text-red-600' : 'bg-neutral-900 text-white'}`}>
                     {v.is_active ? '차단' : '해제'}
@@ -378,6 +389,92 @@ function VendorManager() {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+// ── 주문 관리 ───────────────────────────────────
+
+const ORDER_STATUS = {
+  pending: { label: '접수 대기', cls: 'bg-yellow-100 text-yellow-800' },
+  accepted: { label: '수락됨', cls: 'bg-green-100 text-green-700' },
+  rejected: { label: '거절됨', cls: 'bg-red-100 text-red-700' },
+}
+
+function OrderManager() {
+  const [orders, setOrders] = useState(null)
+  const [filter, setFilter] = useState('pending')
+
+  const load = () =>
+    supabase.from('orders').select('*, profiles(company_name, login_id)')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setOrders(data ?? []))
+
+  useEffect(() => {
+    load()
+    const ch = supabase.channel('admin-orders-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, load)
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [])
+
+  const act = async (o, status) => {
+    const admin_note = prompt(status === 'accepted' ? '수락 메모 (업체에게 보임, 생략 가능):' : '거절 사유 (업체에게 보임):', '')
+    if (admin_note === null) return
+    const { error } = await supabase.from('orders').update({ status, admin_note: admin_note || null }).eq('id', o.id)
+    if (error) alert('처리 실패: ' + error.message)
+    load()
+  }
+
+  if (!orders) return <p className="text-neutral-400 py-10 text-center">불러오는 중…</p>
+  const shown = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
+  const pendingCount = orders.filter((o) => o.status === 'pending').length
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="font-bold text-lg">주문 관리 {pendingCount > 0 && <span className="text-brand">({pendingCount}건 대기)</span>}</h2>
+        <div className="flex gap-1">
+          {['pending', 'accepted', 'rejected', 'all'].map((f) => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold min-h-[40px] ${filter === f ? 'bg-neutral-900 text-white' : 'bg-white border border-neutral-200 text-neutral-600'}`}>
+              {f === 'all' ? '전체' : ORDER_STATUS[f].label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {shown.length === 0 && <p className="text-neutral-400 text-center py-10">해당 주문이 없습니다.</p>}
+      {shown.map((o) => (
+        <div key={o.id} className="bg-white rounded-xl p-4 shadow-sm fade-up">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+            <p className="font-bold">
+              {o.profiles?.company_name ?? '?'}
+              <span className="text-xs text-neutral-400 font-normal ml-2">#{o.id} · {new Date(o.created_at).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+            </p>
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ORDER_STATUS[o.status]?.cls}`}>{ORDER_STATUS[o.status]?.label}</span>
+          </div>
+          <div className="space-y-1 text-sm mb-2">
+            {o.items.map((it, i) => (
+              <p key={i} className="flex justify-between gap-2">
+                <span className="text-neutral-700">{it.name}{it.label ? ` (${it.label})` : ''} × {it.qty}</span>
+                <span className="font-semibold whitespace-nowrap">{it.price != null ? won(it.price * it.qty) : '문의'}</span>
+              </p>
+            ))}
+          </div>
+          <div className="flex justify-between items-center pt-2 border-t border-neutral-100">
+            <span className="font-bold text-brand">{won(o.total_wholesale)}</span>
+            {o.status === 'pending' && (
+              <div className="flex gap-2">
+                <button onClick={() => act(o, 'accepted')} className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-bold min-h-[44px]">수락</button>
+                <button onClick={() => act(o, 'rejected')} className="px-4 py-2 rounded-lg border border-red-300 text-red-600 text-sm font-bold min-h-[44px]">거절</button>
+              </div>
+            )}
+          </div>
+          {o.vendor_note && <p className="text-xs text-neutral-500 mt-2">업체 요청사항: {o.vendor_note}</p>}
+          {o.admin_note && <p className="text-xs text-neutral-400 mt-1">내 메모: {o.admin_note}</p>}
+        </div>
+      ))}
     </div>
   )
 }
@@ -417,23 +514,25 @@ function MyAccount() {
 // ── 탭 셸 ───────────────────────────────────────
 
 const TABS = [
+  { key: 'orders', label: '주문' },
   { key: 'products', label: '제품 관리' },
   { key: 'vendors', label: '업체 관리' },
   { key: 'account', label: '내 계정' },
 ]
 
 export default function Admin() {
-  const [tab, setTab] = useState('products')
+  const [tab, setTab] = useState('orders')
   return (
     <div>
-      <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm w-fit">
+      <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm w-fit overflow-x-auto max-w-full">
         {TABS.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 rounded-lg text-sm font-semibold min-h-[44px] ${tab === t.key ? 'bg-neutral-900 text-white' : 'text-neutral-600'}`}>
+            className={`shrink-0 px-4 py-2.5 rounded-lg text-sm font-semibold min-h-[44px] transition-colors ${tab === t.key ? 'bg-neutral-900 text-white' : 'text-neutral-600'}`}>
             {t.label}
           </button>
         ))}
       </div>
+      {tab === 'orders' && <OrderManager />}
       {tab === 'products' && <AdminProducts />}
       {tab === 'vendors' && <VendorManager />}
       {tab === 'account' && <MyAccount />}

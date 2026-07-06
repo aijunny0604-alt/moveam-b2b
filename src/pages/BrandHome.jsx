@@ -58,7 +58,22 @@ export default function BrandHome() {
     return rows
   }, [products, q, brandFilter])
 
-  if (!filtered) return <p className="text-neutral-400 py-10 text-center">불러오는 중…</p>
+  if (!filtered) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-14">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex gap-3 bg-white rounded-2xl p-3 shadow-sm">
+            <div className="w-24 h-24 rounded-xl skeleton shrink-0" />
+            <div className="flex-1 space-y-2 py-1.5">
+              <div className="h-4 rounded skeleton w-3/4" />
+              <div className="h-3 rounded skeleton w-1/2" />
+              <div className="h-3 rounded skeleton w-2/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   const countOf = (id) => products.filter((p) => p.brand_id === id).length
 
@@ -86,8 +101,8 @@ export default function BrandHome() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-1">
-        {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} />
+        {filtered.map((p, i) => (
+          <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }} />
         ))}
       </div>
       {filtered.length === 0 && (

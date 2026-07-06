@@ -3,15 +3,30 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import PriceTable from '../components/PriceTable'
 import InquiryButtons from '../components/InquiryButtons'
-import { useAuth } from '../App'
+import { useAuth, useCart } from '../App'
 
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { profile } = useAuth()
+  const { addItem } = useCart()
   const [product, setProduct] = useState(null)
   const [images, setImages] = useState([])
   const [current, setCurrent] = useState(0)
+  const [toast, setToast] = useState('')
+
+  const handleAdd = (variant) => {
+    addItem({
+      productId: product.id,
+      variantId: variant?.id ?? null,
+      name: product.name,
+      label: variant?.label ?? null,
+      price: variant ? variant.wholesale_price : product.wholesale_price,
+      qty: 1,
+    })
+    setToast('견적함에 담았습니다 ✓')
+    setTimeout(() => setToast(''), 1800)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -48,7 +63,7 @@ export default function ProductDetail() {
         <div className="space-y-3">
           <div className="rounded-2xl overflow-hidden bg-neutral-200 aspect-square flex items-center justify-center">
             {images.length > 0 ? (
-              <img src={images[current]} alt={product.name} className="w-full h-full object-contain bg-white" />
+              <img key={current} src={images[current]} alt={product.name} className="w-full h-full object-contain bg-white fade-in" />
             ) : (
               <span className="text-neutral-400">등록된 사진이 없습니다</span>
             )}
@@ -85,7 +100,7 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <PriceTable product={product} />
+          <PriceTable product={product} onAdd={handleAdd} />
 
           {product.public_note && (
             <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-sm">
@@ -102,6 +117,12 @@ export default function ProductDetail() {
           )}
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-20 bg-neutral-900 text-white text-sm font-semibold px-5 py-3 rounded-full shadow-lg fade-up">
+          {toast}
+        </div>
+      )}
 
       <InquiryButtons productName={product.name} />
     </div>

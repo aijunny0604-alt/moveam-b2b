@@ -17,3 +17,30 @@ html {
 body {
   @apply bg-neutral-100 text-neutral-900;
 }
+
+/* ── 모션: 절제된 고급 톤 ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up { animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in { animation: fade-in 0.3s ease-out both; }
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #e7e7e7 25%, #f3f3f3 37%, #e7e7e7 63%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up, .fade-in, .skeleton { animation: none; }
+}

@@ -1,6 +1,19 @@
 // 관리자 전용 계정 관리 API (service_role은 서버에만 존재)
-// actions: create(계정 발급), reset-password(비번 재발급)
+// actions: create-code(코드 계정 발급), change-code(코드 변경), create(레거시 id/pw), reset-password
 import { createClient } from 'npm:@supabase/supabase-js@2'
+
+// ⚠️ src/lib/code.js와 동일 로직 유지
+async function sha256hex(s: string) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+async function codeCredentials(code: string) {
+  const n = code.normalize('NFC').trim().toLowerCase()
+  return {
+    email: `c${(await sha256hex('id:' + n)).slice(0, 24)}@code.moveam.local`,
+    password: (await sha256hex('pw:' + n)).slice(0, 32),
+  }
+}
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -26,6 +39,27 @@ Deno.serve(async (req) => {
   if (!prof || prof.role !== 'admin' || !prof.is_active) return json({ error: '관리자 전용 기능입니다' }, 403)
 
   const { action, ...p } = await req.json()
+
+  if (action === 'create-code') {
+    if (!p.code?.trim() || !p.companyName) return json({ error: '코드/업체명 필수' }, 400)
+    const { email, password } = await codeCredentials(p.code)
+    const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true })
+    if (error) return json({ error: error.message.includes('already') ? '이미 사용 중인 코드입니다' : error.message }, 400)
+    const { error: pErr } = await admin.from('profiles').insert({
+      id: data.user.id, company_name: p.companyName, login_id: p.code.trim(), role: 'vendor', memo: p.memo ?? null,
+    })
+    if (pErr) return json({ error: pErr.message }, 400)
+    return json({ ok: true, userId: data.user.id })
+  }
+
+  if (action === 'change-code') {
+    if (!p.userId || !p.newCode?.trim()) return json({ error: 'userId/newCode 필수' }, 400)
+    const { email, password } = await codeCredentials(p.newCode)
+    const { error } = await admin.auth.admin.updateUserById(p.userId, { email, password, email_confirm: true })
+    if (error) return json({ error: error.message.includes('already') ? '이미 사용 중인 코드입니다' : error.message }, 400)
+    await admin.from('profiles').update({ login_id: p.newCode.trim() }).eq('id', p.userId)
+    return json({ ok: true })
+  }
 
   if (action === 'create') {
     if (!p.loginId || !p.password || !p.companyName) return json({ error: '아이디/비밀번호/업체명 필수' }, 400)

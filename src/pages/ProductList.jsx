@@ -68,8 +68,8 @@ export default function ProductList() {
       </div>
       <SearchBar value={q} onChange={setQ} />
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-2">
-        {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} />
+        {filtered.map((p, i) => (
+          <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }} />
         ))}
       </div>
       {filtered.length === 0 && (
