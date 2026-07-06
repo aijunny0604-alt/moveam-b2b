@@ -1,6 +1,26 @@
 import { useState } from 'react'
 import { won } from '../lib/format'
 
+// 수량 선택 + 장바구니 담기
+function QtyAddRow({ onAdd, target }) {
+  const [qty, setQty] = useState(1)
+  return (
+    <div className="flex gap-2 items-stretch">
+      <div className="flex items-center gap-1 bg-white border border-neutral-300 rounded-xl px-1.5">
+        <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 font-bold text-lg">−</button>
+        <span className="w-9 text-center font-bold text-lg">{qty}</span>
+        <button onClick={() => setQty(qty + 1)} className="w-10 h-10 font-bold text-lg">＋</button>
+      </div>
+      <button
+        onClick={() => { onAdd(target, qty); setQty(1) }}
+        className="flex-1 bg-neutral-900 text-white rounded-xl py-3 font-bold min-h-[48px] transition-transform active:scale-[0.98]"
+      >
+        🛒 장바구니에 담기
+      </button>
+    </div>
+  )
+}
+
 // 옵션(사이즈/색상)형 제품: 스토어 스타일 선택 UI + 접이식 전체 단가표
 // onAdd(variant|null) — 장바구니 담기 콜백 (variant 없는 제품은 null)
 export default function PriceTable({ product, onAdd }) {
@@ -21,12 +41,7 @@ export default function PriceTable({ product, onAdd }) {
             <p className="font-bold text-xl text-neutral-700">{won(product.retail_price)}</p>
           </div>
         </div>
-        {onAdd && (
-          <button onClick={() => onAdd(null)}
-            className="w-full bg-neutral-900 text-white rounded-xl py-3 font-bold min-h-[48px] transition-transform active:scale-[0.98]">
-            🛒 견적함에 담기
-          </button>
-        )}
+        {onAdd && <QtyAddRow onAdd={onAdd} target={null} />}
       </div>
     )
   }
@@ -67,12 +82,7 @@ export default function PriceTable({ product, onAdd }) {
         </div>
       </div>
 
-      {onAdd && (
-        <button onClick={() => onAdd(v)}
-          className="w-full bg-neutral-900 text-white rounded-xl py-3 font-bold min-h-[48px] transition-transform active:scale-[0.98]">
-          🛒 「{v.label}」 견적함에 담기
-        </button>
-      )}
+      {onAdd && <QtyAddRow key={v.id} onAdd={onAdd} target={v} />}
 
       {/* 전체 단가표 (접이식) */}
       <div>

@@ -59,8 +59,8 @@ export default function Cart() {
     return (
       <div className="text-center py-16 fade-up">
         <p className="text-4xl mb-3">🛒</p>
-        <p className="text-neutral-500 mb-1">견적함이 비어 있습니다.</p>
-        <p className="text-sm text-neutral-400 mb-6">제품 상세에서 「견적함에 담기」를 눌러보세요.</p>
+        <p className="text-neutral-500 mb-1">장바구니가 비어 있습니다.</p>
+        <p className="text-sm text-neutral-400 mb-6">제품 상세에서 「장바구니에 담기」를 눌러보세요.</p>
         {msg && <p className="text-sm bg-white rounded-xl p-4 shadow-sm max-w-md mx-auto mb-4">{msg}</p>}
         <div className="flex gap-2 justify-center">
           <Link to="/" className="px-4 py-3 rounded-xl bg-neutral-900 text-white font-bold min-h-[48px] inline-flex items-center">제품 보러가기</Link>
@@ -73,7 +73,7 @@ export default function Cart() {
   return (
     <div className="max-w-2xl mx-auto space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-lg">견적함 ({items.length})</h2>
+        <h2 className="font-bold text-lg">장바구니 ({items.length})</h2>
         <div className="flex gap-2">
           <Link to="/orders" className="text-sm text-neutral-500 min-h-[44px] flex items-center">주문 내역 →</Link>
         </div>
@@ -120,7 +120,7 @@ export default function Cart() {
           <button onClick={copy} className="flex-1 border border-neutral-300 rounded-xl py-3 font-semibold min-h-[48px]">
             발주서 복사 (카톡용)
           </button>
-          <button onClick={() => { if (confirm('견적함을 비울까요?')) clearCart() }} className="px-4 border border-neutral-300 rounded-xl min-h-[48px] text-neutral-500">
+          <button onClick={() => { if (confirm('장바구니를 비울까요?')) clearCart() }} className="px-4 border border-neutral-300 rounded-xl min-h-[48px] text-neutral-500">
             비우기
           </button>
         </div>

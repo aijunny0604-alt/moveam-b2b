@@ -15,16 +15,16 @@ export default function ProductDetail() {
   const [current, setCurrent] = useState(0)
   const [toast, setToast] = useState('')
 
-  const handleAdd = (variant) => {
+  const handleAdd = (variant, qty = 1) => {
     addItem({
       productId: product.id,
       variantId: variant?.id ?? null,
       name: product.name,
       label: variant?.label ?? null,
       price: variant ? variant.wholesale_price : product.wholesale_price,
-      qty: 1,
+      qty,
     })
-    setToast('견적함에 담았습니다 ✓')
+    setToast(`장바구니에 ${qty}개 담았습니다 ✓`)
     setTimeout(() => setToast(''), 1800)
   }
 

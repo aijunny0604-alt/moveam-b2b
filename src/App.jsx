@@ -39,7 +39,7 @@ function Header({ pendingOrders }) {
               )}
             </Link>
           )}
-          <Link to="/cart" className="relative px-3 py-2 rounded-lg border border-neutral-300 min-h-[44px] flex items-center transition-colors hover:border-neutral-500" aria-label="견적함">
+          <Link to="/cart" className="relative px-3 py-2 rounded-lg border border-neutral-300 min-h-[44px] flex items-center transition-colors hover:border-neutral-500" aria-label="장바구니">
             🛒
             {count > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-brand text-white text-[11px] font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center fade-in">
