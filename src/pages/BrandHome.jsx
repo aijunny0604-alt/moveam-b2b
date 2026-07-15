@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import ProductCard from '../components/ProductCard'
 
+// 모바일에서 autoFocus 하면 진입 즉시 키보드가 올라와 카테고리 카드를 가린다 (사장님들은 폰으로 봄)
+const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+
 // 메인 = 검색 중심 랜딩: 큰 검색창 + 단가표 카테고리 카드. 검색어가 있을 때만 결과 표시.
 export default function BrandHome() {
   const [brands, setBrands] = useState([])
@@ -69,7 +72,7 @@ export default function BrandHome() {
             onChange={(e) => setQ(e.target.value)}
             placeholder="예: 타각킷, 젠쿱, 촉매, 행거"
             className="w-full border-2 border-neutral-300 focus:border-brand rounded-2xl pl-11 pr-10 py-4 text-base bg-white shadow-sm outline-none transition-colors"
-            autoFocus
+            autoFocus={isDesktop}
           />
           {searching && (
             <button

@@ -63,7 +63,10 @@ function CartBar() {
   const { items } = useCart()
   const location = useLocation()
   const count = items.reduce((s, i) => s + i.qty, 0)
-  const total = items.filter((i) => i.price != null).reduce((s, i) => s + i.price * i.qty, 0)
+  const priced = items.filter((i) => i.price != null)
+  const total = priced.reduce((s, i) => s + i.price * i.qty, 0)
+  // 단가 미정(문의) 항목은 합계에 못 들어가므로 별도로 알려준다 — 합계가 실제보다 적어 보이면 안 됨
+  const askCount = count - priced.reduce((s, i) => s + i.qty, 0)
   // 장바구니 페이지, 상세페이지(하단 문의버튼과 겹침)에서는 숨김
   if (count === 0 || location.pathname === '/cart' || location.pathname.startsWith('/product/')) return null
   return (
@@ -79,6 +82,7 @@ function CartBar() {
         </span>
         <span className="font-bold whitespace-nowrap">
           {won(total)}
+          {askCount > 0 && <span className="text-amber-300 text-sm font-semibold ml-1">+문의 {askCount}</span>}
           <span className="opacity-70 text-sm font-semibold ml-2">장바구니 →</span>
         </span>
       </div>

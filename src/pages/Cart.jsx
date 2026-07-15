@@ -14,6 +14,8 @@ export default function Cart() {
 
   const priced = items.filter((i) => i.price != null)
   const total = priced.reduce((s, i) => s + i.price * i.qty, 0)
+  // 단가 미정 항목은 합계에서 빠지므로 개수를 따로 표시 — 합계만 보고 총액으로 오해하면 안 됨
+  const askCount = items.filter((i) => i.price == null).reduce((s, i) => s + i.qty, 0)
 
   const orderText = () =>
     [
@@ -26,7 +28,7 @@ export default function Cart() {
           `${i + 1}. ${it.name}${it.label ? ` (${it.label})` : ''}\n   ${it.price != null ? won(it.price) : '단가 문의'} × ${it.qty}${it.price != null ? ` = ${won(it.price * it.qty)}` : ''}`
       ),
       '',
-      `합계: ${won(total)} (도매가 기준)`,
+      `합계: ${won(total)} (도매가 기준)${askCount > 0 ? ` — 단가 문의 ${askCount}개 별도` : ''}`,
       ...(note.trim() ? ['', `요청사항: ${note.trim()}`] : []),
     ].join('\n')
 
@@ -112,6 +114,11 @@ export default function Cart() {
           <span className="text-neutral-500">합계 (도매가)</span>
           <span className="font-bold text-2xl text-brand">{won(total)}</span>
         </div>
+        {askCount > 0 && (
+          <p className="text-sm bg-amber-50 text-amber-800 rounded-lg px-3 py-2 -mt-1">
+            단가 문의 항목 {askCount}개는 합계에 포함되지 않았습니다 — 금액은 확인 후 안내드립니다.
+          </p>
+        )}
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
