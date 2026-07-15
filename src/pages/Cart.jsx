@@ -94,7 +94,15 @@ export default function Cart() {
               <span className="w-8 text-center font-bold">{it.qty}</span>
               <button onClick={() => setQty(cartKey(it), it.qty + 1)} className="w-9 h-9 rounded-lg border border-neutral-300 font-bold">＋</button>
             </div>
-            <p className="w-24 text-right font-bold text-sm whitespace-nowrap">{it.price != null ? won(it.price * it.qty) : '-'}</p>
+            <p className="w-20 text-right font-bold text-sm whitespace-nowrap">{it.price != null ? won(it.price * it.qty) : '-'}</p>
+            <button
+              onClick={() => setQty(cartKey(it), 0)}
+              aria-label="빼기"
+              title="장바구니에서 빼기"
+              className="w-8 h-8 shrink-0 rounded-lg border border-neutral-200 text-neutral-400 hover:text-red-600 hover:border-red-300 flex items-center justify-center"
+            >
+              ✕
+            </button>
           </div>
         ))}
       </div>

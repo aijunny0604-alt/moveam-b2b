@@ -7,11 +7,13 @@ const STATUS = {
   pending: { label: '접수 대기', cls: 'bg-yellow-100 text-yellow-800' },
   accepted: { label: '✅ 수락됨', cls: 'bg-green-100 text-green-700' },
   rejected: { label: '거절됨', cls: 'bg-red-100 text-red-700' },
+  cancelled: { label: '취소됨', cls: 'bg-neutral-200 text-neutral-600' },
 }
 
 // 업체용 주문 내역
 export default function Orders() {
   const [orders, setOrders] = useState(null)
+  const [busyId, setBusyId] = useState(null)
 
   const load = () =>
     supabase.from('orders').select('*').order('created_at', { ascending: false })
@@ -25,6 +27,15 @@ export default function Orders() {
       .subscribe()
     return () => supabase.removeChannel(ch)
   }, [])
+
+  const cancelOrder = async (o) => {
+    if (!confirm(`주문 #${o.id}을(를) 취소할까요? (접수 대기 중인 주문만 취소됩니다)`)) return
+    setBusyId(o.id)
+    const { error } = await supabase.from('orders').update({ status: 'cancelled' }).eq('id', o.id)
+    setBusyId(null)
+    if (error) { alert('취소 실패: ' + error.message); return }
+    load()
+  }
 
   if (!orders) return <p className="text-neutral-400 py-10 text-center">불러오는 중…</p>
 
@@ -66,6 +77,17 @@ export default function Orders() {
             <p className="text-xs bg-neutral-50 rounded-lg p-2 mt-2">
               <span className="font-semibold">무브모터스:</span> {o.admin_note}
             </p>
+          )}
+          {o.status === 'pending' && (
+            <div className="mt-3 pt-2 border-t border-neutral-100 flex justify-end">
+              <button
+                onClick={() => cancelOrder(o)}
+                disabled={busyId === o.id}
+                className="px-4 py-2 rounded-lg border border-red-300 text-red-600 text-sm font-bold min-h-[44px] disabled:opacity-40"
+              >
+                {busyId === o.id ? '취소 중…' : '주문 취소'}
+              </button>
+            </div>
           )}
         </div>
       ))}

@@ -1,14 +1,22 @@
 import { Link } from 'react-router-dom'
 import { won, priceSummary } from '../lib/format'
 
-export default function ProductCard({ product, imageUrl, style }) {
+export default function ProductCard({ product, imageUrl, style, isAdmin, onEdit }) {
   const { wholesale, retail, hasOptions } = priceSummary(product)
   return (
     <Link
       to={`/product/${product.id}`}
       style={style}
-      className="group fade-up flex gap-3 bg-white rounded-2xl p-3 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99]"
+      className="group fade-up relative flex gap-3 bg-white rounded-2xl p-3 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99]"
     >
+      {isAdmin && (
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit?.(product) }}
+          className="absolute top-2 right-2 z-10 px-2.5 py-1.5 rounded-lg bg-neutral-900/85 text-white text-xs font-bold shadow-sm hover:bg-neutral-900 min-h-[36px]"
+        >
+          ✏️ 수정
+        </button>
+      )}
       <div className="relative w-24 h-24 shrink-0 rounded-xl bg-neutral-200 overflow-hidden flex items-center justify-center">
         {imageUrl ? (
           <img
@@ -43,7 +51,12 @@ export default function ProductCard({ product, imageUrl, style }) {
             </span>
           </p>
         </div>
-        <div className="flex gap-1 mt-1">
+        <div className="flex gap-1 mt-1 flex-wrap">
+          {isAdmin && !product.is_active && (
+            <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-neutral-200 text-neutral-600 font-semibold">
+              숨김
+            </span>
+          )}
           {!product.in_stock && (
             <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-semibold">
               재고 없음

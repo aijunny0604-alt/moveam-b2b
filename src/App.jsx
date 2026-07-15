@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { HashRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { supabase, isConfigured } from './lib/supabase'
+import { won } from './lib/format'
 import logo from './assets/move-logo.png'
 import Login from './pages/Login'
 import BrandHome from './pages/BrandHome'
@@ -54,6 +55,34 @@ function Header({ pendingOrders }) {
         </div>
       </div>
     </header>
+  )
+}
+
+// 네이버 스토어식 상시 장바구니 바 — 담은 내역이 어느 페이지에서든 하단에 유지됨
+function CartBar() {
+  const { items } = useCart()
+  const location = useLocation()
+  const count = items.reduce((s, i) => s + i.qty, 0)
+  const total = items.filter((i) => i.price != null).reduce((s, i) => s + i.price * i.qty, 0)
+  // 장바구니 페이지, 상세페이지(하단 문의버튼과 겹침)에서는 숨김
+  if (count === 0 || location.pathname === '/cart' || location.pathname.startsWith('/product/')) return null
+  return (
+    <Link
+      to="/cart"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-2rem)] max-w-md fade-up"
+    >
+      <div className="bg-neutral-900 text-white rounded-2xl shadow-xl px-5 py-3.5 flex items-center justify-between gap-3 transition-transform active:scale-[0.99]">
+        <span className="flex items-center gap-2 font-bold">
+          🛒
+          <span className="bg-brand text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] px-1 flex items-center justify-center">{count}</span>
+          담김
+        </span>
+        <span className="font-bold whitespace-nowrap">
+          {won(total)}
+          <span className="opacity-70 text-sm font-semibold ml-2">장바구니 →</span>
+        </span>
+      </div>
+    </Link>
   )
 }
 
@@ -178,6 +207,7 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </main>
+            <CartBar />
           </>
         )}
       </HashRouter>

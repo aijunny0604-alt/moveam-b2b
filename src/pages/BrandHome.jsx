@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import SearchBar from '../components/SearchBar'
 import ProductCard from '../components/ProductCard'
 
-// 메인 = 전체 제품 브라우저: 전체 검색 + 브랜드 칩 필터
+// 메인 = 검색 중심 랜딩: 큰 검색창 + 단가표 카테고리 카드. 검색어가 있을 때만 결과 표시.
 export default function BrandHome() {
   const [brands, setBrands] = useState([])
   const [products, setProducts] = useState(null)
   const [thumbs, setThumbs] = useState({})
   const [q, setQ] = useState('')
-  const [brandFilter, setBrandFilter] = useState(null) // null = 전체
 
   useEffect(() => {
     let cancelled = false
@@ -45,68 +44,88 @@ export default function BrandHome() {
     return () => { cancelled = true }
   }, [])
 
-  const filtered = useMemo(() => {
-    if (!products) return null
-    let rows = products
-    if (brandFilter) rows = rows.filter((p) => p.brand_id === brandFilter)
+  const searching = q.trim().length > 0
+
+  const results = useMemo(() => {
+    if (!products || !searching) return []
     const t = q.trim().toLowerCase()
-    if (t) {
-      rows = rows.filter((p) =>
-        [p.name, p.description, p.search_keywords].filter(Boolean).join(' ').toLowerCase().includes(t)
-      )
-    }
-    return rows
-  }, [products, q, brandFilter])
-
-  if (!filtered) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-14">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="flex gap-3 bg-white rounded-2xl p-3 shadow-sm">
-            <div className="w-24 h-24 rounded-xl skeleton shrink-0" />
-            <div className="flex-1 space-y-2 py-1.5">
-              <div className="h-4 rounded skeleton w-3/4" />
-              <div className="h-3 rounded skeleton w-1/2" />
-              <div className="h-3 rounded skeleton w-2/3" />
-            </div>
-          </div>
-        ))}
-      </div>
+    return products.filter((p) =>
+      [p.name, p.description, p.search_keywords].filter(Boolean).join(' ').toLowerCase().includes(t)
     )
-  }
+  }, [products, q, searching])
 
-  const countOf = (id) => products.filter((p) => p.brand_id === id).length
+  const countOf = (id) => (products ?? []).filter((p) => p.brand_id === id).length
 
   return (
     <div>
-      <SearchBar value={q} onChange={setQ} placeholder="전체 제품 검색 (예: 타각킷, 젠쿱, 허브)" />
-
-      {/* 브랜드 칩 */}
-      <div className="flex gap-2 overflow-x-auto py-2 -mx-4 px-4">
-        <button
-          onClick={() => setBrandFilter(null)}
-          className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold min-h-[40px] ${!brandFilter ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-600 border border-neutral-200'}`}
-        >
-          전체 {products.length}
-        </button>
-        {brands.map((b) => (
-          <button
-            key={b.id}
-            onClick={() => setBrandFilter(brandFilter === b.id ? null : b.id)}
-            className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold min-h-[40px] ${brandFilter === b.id ? 'bg-brand text-white' : 'bg-white text-neutral-600 border border-neutral-200'}`}
-          >
-            {b.name} {countOf(b.id)}
-          </button>
-        ))}
+      {/* 검색 히어로 */}
+      <div className="text-center pt-6 pb-5">
+        <h1 className="font-bold text-xl lg:text-2xl mb-1">단가표 검색</h1>
+        <p className="text-sm text-neutral-500 mb-4">제품명·차종·부품으로 빠르게 찾아보세요</p>
+        <div className="relative max-w-xl mx-auto">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-lg">🔍</span>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="예: 타각킷, 젠쿱, 촉매, 행거"
+            className="w-full border-2 border-neutral-300 focus:border-brand rounded-2xl pl-11 pr-10 py-4 text-base bg-white shadow-sm outline-none transition-colors"
+            autoFocus
+          />
+          {searching && (
+            <button
+              onClick={() => setQ('')}
+              aria-label="검색 지우기"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-neutral-100 text-neutral-500 flex items-center justify-center"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mt-1">
-        {filtered.map((p, i) => (
-          <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }} />
-        ))}
-      </div>
-      {filtered.length === 0 && (
-        <p className="text-neutral-400 text-center py-10">검색 결과가 없습니다.</p>
+      {!products ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-24 rounded-2xl skeleton" />
+          ))}
+        </div>
+      ) : searching ? (
+        /* 검색 결과 */
+        <div>
+          <p className="text-sm text-neutral-500 mb-2">검색 결과 {results.length}개</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {results.map((p, i) => (
+              <ProductCard key={p.id} product={p} imageUrl={thumbs[p.id]} style={{ animationDelay: `${Math.min(i, 12) * 30}ms` }} />
+            ))}
+          </div>
+          {results.length === 0 && (
+            <p className="text-neutral-400 text-center py-12">「{q.trim()}」 검색 결과가 없습니다.<br />제품명이나 차종을 다르게 입력해보세요.</p>
+          )}
+        </div>
+      ) : (
+        /* 단가표 카테고리 */
+        <div>
+          <p className="text-sm font-semibold text-neutral-700 mb-2 px-1">단가표 카테고리</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {brands.map((b, i) => (
+              <Link
+                key={b.id}
+                to={`/brand/${b.slug}`}
+                style={{ animationDelay: `${Math.min(i, 12) * 40}ms` }}
+                className="fade-up group bg-white rounded-2xl p-4 shadow-sm border border-neutral-100 hover:shadow-lg hover:-translate-y-0.5 hover:border-brand/30 transition-all duration-200 flex items-center justify-between gap-2 min-h-[76px]"
+              >
+                <div className="min-w-0">
+                  <p className="font-bold leading-snug line-clamp-2">{b.name}</p>
+                  <p className="text-xs text-neutral-500 mt-0.5">단가표 {countOf(b.id)}개 제품</p>
+                </div>
+                <span className="text-neutral-300 group-hover:text-brand text-xl shrink-0 transition-colors">›</span>
+              </Link>
+            ))}
+          </div>
+          {brands.length === 0 && (
+            <p className="text-neutral-400 text-center py-10">등록된 단가표가 없습니다.</p>
+          )}
+        </div>
       )}
     </div>
   )
