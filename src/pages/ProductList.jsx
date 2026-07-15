@@ -17,9 +17,11 @@ export default function ProductList() {
   const [q, setQ] = useState('')
   const [editingId, setEditingId] = useState(null)
 
-  const load = async () => {
+  // isStale: 브랜드를 빠르게 옮겨다닐 때 늦게 온 이전 브랜드 응답이 화면을 덮어쓰지 않도록 하는 가드.
+  // 없으면 헤더는 HKS인데 목록은 BurnWay 단가가 뜰 수 있다.
+  const load = async (isStale = () => false) => {
     const { data: b } = await supabase.from('brands').select('*').eq('slug', slug).single()
-    if (!b) return
+    if (isStale() || !b) return
     setBrand(b)
     let query = supabase
       .from('products')
@@ -28,6 +30,7 @@ export default function ProductList() {
       .order('sort_order')
     if (!isAdmin) query = query.eq('is_active', true) // 관리자는 숨김 제품도 관리 가능하도록 모두 표시
     const { data: prods } = await query
+    if (isStale()) return
     setProducts(prods ?? [])
 
     // 대표 이미지(첫 장)만 서명 URL 발급
@@ -41,7 +44,7 @@ export default function ProductList() {
       const { data: signed } = await supabase.storage
         .from('product-images')
         .createSignedUrls(firsts.map((f) => f.path), 3600)
-      if (!signed) return
+      if (isStale() || !signed) return
       const map = {}
       signed.forEach((s, i) => { if (s.signedUrl) map[firsts[i].pid] = s.signedUrl })
       setThumbs(map)
@@ -50,7 +53,7 @@ export default function ProductList() {
 
   useEffect(() => {
     let cancelled = false
-    ;(async () => { if (!cancelled) await load() })()
+    load(() => cancelled)
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, isAdmin])

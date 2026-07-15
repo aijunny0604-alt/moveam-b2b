@@ -40,7 +40,7 @@ export default function ProductEditor({ product, brands, onSaved, onClose }) {
 
   const save = async () => {
     setBusy(true); setMsg('')
-    const { error } = await supabase.from('products').update({
+    const { error: prodErr } = await supabase.from('products').update({
       name: form.name,
       description: form.description || null,
       search_keywords: form.search_keywords || null,
@@ -53,17 +53,26 @@ export default function ProductEditor({ product, brands, onSaved, onClose }) {
       in_stock: form.in_stock,
     }).eq('id', product.id)
 
-    if (!error && variants.length) {
+    // 옵션형 제품은 단가가 전부 variants에 있다 — 여기서 실패를 놓치면
+    // 관리자는 "저장 완료"를 보고 나가는데 DB는 옛 단가 그대로다.
+    const failed = []
+    if (!prodErr) {
       for (const v of variants) {
-        await supabase.from('product_variants').update({
+        const { error: vErr } = await supabase.from('product_variants').update({
           label: v.label,
           wholesale_price: toInt(v.wholesale_price),
           retail_price: toInt(v.retail_price),
         }).eq('id', v.id)
+        if (vErr) failed.push(`${v.label}: ${vErr.message}`)
       }
     }
     setBusy(false)
-    if (error) { setMsg('저장 실패: ' + error.message); return }
+    if (prodErr) { setMsg('저장 실패: ' + prodErr.message); return }
+    if (failed.length) {
+      setMsg(`⚠️ 옵션 단가 ${failed.length}건 저장 실패 — ${failed.join(' / ')}`)
+      onSaved?.()
+      return
+    }
     setMsg('저장 완료')
     onSaved?.()
   }
